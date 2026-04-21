@@ -200,6 +200,14 @@ app.post('/enquetes/soumettre/:numero', (req, res, next) => {
   enquetesRoutes(req, res, next);
 });
 
+// Servir les fichiers uploads (accessible connecte)
+const fs = require('fs');
+app.get('/fichier/:filename', (req, res) => {
+  var filePath = require('path').join(__dirname, 'uploads', req.params.filename);
+  if (fs.existsSync(filePath)) res.sendFile(require('path').resolve(filePath));
+  else res.status(404).send('Fichier non trouve');
+});
+
 // =============================================
 // ROUTES PROTEGEES
 // =============================================
