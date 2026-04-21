@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const db = require('../models/database');
 const { authMiddleware } = require('../middleware/auth');
+const { envoyerNotification } = require('../middleware/notifications');
 const dashboardModule = require('./dashboard');
 const CATEGORIES = dashboardModule.CATEGORIES;
 const statsBadge = dashboardModule.statsBadge;
@@ -143,6 +144,7 @@ router.post('/creer', authMiddleware, upload.single('fichier'), (req, res) => {
       db.run('INSERT INTO notifications (reclamation_id, destinataire, type, message) VALUES (?,?,?,?)',
         [recId, req.body.email_client||'', 'client', 'Votre reclamation ' + numero + ' a bien ete enregistree. Nous vous repondrons dans les meilleurs delais.']);
 
+      envoyerNotification(recId, 'creation').catch(function(e){console.log('Notif email:', e.message);});
       res.redirect('/reclamation/' + recId + '?success=1');
     }
   );
@@ -288,6 +290,7 @@ router.post('/:id/affecter', authMiddleware, (req, res) => {
     [departement, user.id, req.params.id], function(err) {
       db.run('INSERT INTO traitements (reclamation_id, utilisateur_id, action, commentaire) VALUES (?,?,?,?)',
         [req.params.id, user.id, 'affectation', 'Reclamation affectee au departement ' + departement + (commentaire?'. Note : '+commentaire:'')]);
+      envoyerNotification(req.params.id, 'affectation').catch(function(){});
       res.redirect('/reclamation/' + req.params.id);
     }
   );
@@ -323,6 +326,7 @@ router.post('/:id/cloturer', authMiddleware, (req, res) => {
           [req.params.id, rec.email_client, 'client_cloture', 'Votre reclamation ' + rec.numero_suivi + ' a ete ' + statut_final.toLowerCase() + '. Merci de votre confiance.']);
       }
     });
+    envoyerNotification(req.params.id, 'cloture').catch(function(){});
     res.redirect('/reclamation/' + req.params.id);
   });
 });
