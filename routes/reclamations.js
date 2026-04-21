@@ -1,3 +1,31 @@
+// Envoi notification email/sms inline
+function envoyerNotification(reclamationId, type) {
+  var nodemailer = require('nodemailer');
+  var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user: 'pambohermane@gmail.com', pass: 'uompfxcdhqjpjhcf' }
+  });
+  var db2 = require('../models/database');
+  db2.get('SELECT * FROM reclamations WHERE id = ?', [reclamationId], function(err, rec) {
+    if (!rec) return;
+    var messages = {
+      creation: { sujet: 'BCEG - Reclamation ' + rec.numero_suivi + ' enregistree', texte: 'Bonjour ' + rec.nom_client + ',\n\nVotre reclamation ' + rec.numero_suivi + ' a bien ete enregistree.\n\nCordialement,\nService Clients BCEG' },
+      affectation: { sujet: 'BCEG - Reclamation ' + rec.numero_suivi + ' en cours', texte: 'Bonjour ' + rec.nom_client + ',\n\nVotre reclamation ' + rec.numero_suivi + ' est en cours de traitement.\n\nCordialement,\nService Clients BCEG' },
+      cloture: { sujet: 'BCEG - Reclamation ' + rec.numero_suivi + ' cloturee', texte: 'Bonjour ' + rec.nom_client + ',\n\nVotre reclamation ' + rec.numero_suivi + ' a ete cloturee. Merci de votre confiance.\n\nCordialement,\nService Clients BCEG' }
+    };
+    var msg = messages[type];
+    if (!msg) return;
+    if (rec.email_client && rec.email_client.includes('@')) {
+      transporter.sendMail({ from: '"BCEG Service Clients" <pambohermane@gmail.com>', to: rec.email_client, subject: msg.sujet, text: msg.texte }, function(err) {
+        if (err) console.log('Email error:', err.message);
+        else console.log('Email envoye a', rec.email_client);
+      });
+    }
+    db2.run('INSERT INTO notifications (reclamation_id, destinataire, type, message, statut) VALUES (?,?,?,?,?)',
+      [reclamationId, rec.email_client||rec.telephone_client||'', type, msg.texte, rec.email_client?'envoye':'en_attente_sms']);
+  });
+}
+
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
@@ -5,7 +33,6 @@ const path = require('path');
 const fs = require('fs');
 const db = require('../models/database');
 const { authMiddleware } = require('../middleware/auth');
-const { envoyerNotification } = require('../middleware/notifications');
 const dashboardModule = require('./dashboard');
 const CATEGORIES = dashboardModule.CATEGORIES;
 const statsBadge = dashboardModule.statsBadge;
