@@ -1,0 +1,5 @@
+node_modules/
+reclamations.db
+uploads/
+.env
+*.log
