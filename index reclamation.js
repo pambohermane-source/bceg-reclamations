@@ -12,11 +12,14 @@ const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
 const reclamationsRoutes = require('./routes/reclamations');
 const statistiquesRoutes = require('./routes/statistiques');
+const enquetesRoutes = require('./routes/enquetes');
 
 app.use('/', authRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/reclamation', reclamationsRoutes);
 app.use('/statistiques', statistiquesRoutes);
+app.use('/enquetes', enquetesRoutes);
+app.use('/enquete-client', enquetesRoutes);
 
 app.get('/', (req, res) => res.redirect('/dashboard'));
 
