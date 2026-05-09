@@ -225,4 +225,4 @@ app.get('/', (req, res) => res.redirect('/dashboard'));
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log('BCEG Reclamations demarre sur le port ' + PORT);
-});
+})

@@ -1,0 +1,9 @@
+[phases.build]
+cmds = [
+  "npm install",
+  "npm rebuild sqlite3 --build-from-source",
+  "cd client && npm install && npm run build"
+]
+
+[start]
+cmd = "node index.js"
