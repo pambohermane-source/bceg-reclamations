@@ -62,14 +62,14 @@ const POLES = [
 ];
 
 const PROFILES = [
-  { id: "particulier",       label: "Particulier",         icon: "👤", desc: "Client individuel" },
-  { id: "entreprise_pme",    label: "Entreprise < 500 MF", icon: "🏢", desc: "PME / TPE" },
-  { id: "entreprise_grande", label: "Entreprise > 500 MF", icon: "🏭", desc: "Grande entreprise" },
-  { id: "institutionnel",    label: "Institutionnel",      icon: "🏛️", desc: "Organisation publique" },
-  { id: "fournisseur",       label: "Fournisseur",         icon: "🤝", desc: "Partenaire BCEG" },
+  { id: "particulier",   label: "Particulier",   icon: "👤", desc: "Client individuel" },
+  { id: "professionnel", label: "Professionnel", icon: "💼", desc: "Profession libérale" },
+  { id: "entreprise",    label: "Entreprise",    icon: "🏢", desc: "Société ou PME" },
+  { id: "fournisseur",   label: "Fournisseur",   icon: "🤝", desc: "Partenaire BCEG" },
 ];
 
 const DEMO_USER = { prenom: "Hermane", nom: "Pambo Taty", email: "hermannpambotaty@yahoo.com" };
+const ASSISTANT_URL = "https://dapper-tulumba-db53a5.netlify.app";
 
 const lbl = { display:"block", fontSize:11, fontWeight:700, color:T_M, marginBottom:6, letterSpacing:0.8, textTransform:"uppercase" };
 const inp = { width:"100%", padding:"14px 16px", background:"#EEECEA", border:"1.5px solid transparent", borderRadius:10, fontSize:15, color:T_D, outline:"none", boxSizing:"border-box" };
@@ -233,10 +233,10 @@ function Dashboard({ user, claims, onNewClaim, onNavigate }) {
   const initial = user?.prenom?.[0]?.toUpperCase()||"?";
   const enCours = claims.filter(c=>c.statut==="En traitement").length;
   const cards = [
-    { id:"assistant",  icon:"💬", label:"Assistant",    sub:"Poser une question",    bg:"#EEF2E8" },
-    { id:"newClaim",   icon:"📋", label:"Réclamations", sub:"Suivi de vos demandes", bg:"#F5F0E4" },
-    { id:"history",    icon:"🗂️", label:"Historique",   sub:"Mes dossiers",           bg:"#EAF0EE" },
-    { id:"profile",    icon:"👤", label:"Mon Profil",   sub:"Informations",            bg:"#EDF0F5" },
+    { id:"assistant",  icon:"🤖", label:"Assistant IA", sub:"Poser une question",    bg:"#EEF2E8", action:()=>window.open(ASSISTANT_URL,"_blank") },
+    { id:"newClaim",   icon:"📋", label:"Réclamations", sub:"Suivi de vos demandes", bg:"#F5F0E4", action:onNewClaim },
+    { id:"history",    icon:"🗂️", label:"Historique",   sub:"Mes dossiers",           bg:"#EAF0EE", action:()=>onNavigate("history") },
+    { id:"profile",    icon:"👤", label:"Mon Profil",   sub:"Informations",            bg:"#EDF0F5", action:()=>onNavigate("profile") },
   ];
   return (
     <div style={{ minHeight:"100vh", background:BG, paddingBottom:80 }}>
@@ -256,13 +256,13 @@ function Dashboard({ user, claims, onNewClaim, onNavigate }) {
       </GH>
       <div style={{ padding:"16px 16px 0" }}>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:18 }}>
-          {cards.map(c=>(<button key={c.id} onClick={()=>c.id==="newClaim"?onNewClaim():onNavigate(c.id)} style={{ ...cardS, border:"none", cursor:"pointer", textAlign:"left", marginBottom:0 }}><div style={{ width:44, height:44, borderRadius:14, background:c.bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, marginBottom:10 }}>{c.icon}</div><div style={{ fontSize:14, fontWeight:800, color:T_D, marginBottom:3 }}>{c.label}</div><div style={{ fontSize:11, color:T_L }}>{c.sub}</div></button>))}
+          {cards.map(c=>(<button key={c.id} onClick={c.action} style={{ ...cardS, border:"none", cursor:"pointer", textAlign:"left", marginBottom:0 }}><div style={{ width:44, height:44, borderRadius:14, background:c.bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, marginBottom:10 }}>{c.icon}</div><div style={{ fontSize:14, fontWeight:800, color:T_D, marginBottom:3 }}>{c.label}</div><div style={{ fontSize:11, color:T_L }}>{c.sub}</div></button>))}
         </div>
         {claims.length===0 ? (
           <div style={{ ...cardS, textAlign:"center", padding:"32px 20px" }}>
             <div style={{ width:56, height:56, borderRadius:16, background:BG, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, margin:"0 auto 14px", cursor:"pointer" }} onClick={onNewClaim}>📄</div>
             <h3 style={{ fontSize:15, fontWeight:700, color:T_D, marginBottom:6 }}>Aucune réclamation pour le moment</h3>
-            <p style={{ fontSize:13, color:T_L, lineHeight:1.6 }}>Si vous rencontrez un problème,<br/>notre assistant est disponible</p>
+            <p style={{ fontSize:13, color:T_L, lineHeight:1.6 }}>Si vous rencontrez un problème,<br/>notre assistant IA est disponible</p>
           </div>
         ) : (
           <div>
@@ -354,37 +354,6 @@ function ProfileScreen({ user, onBack }) {
   );
 }
 
-function AssistantScreen({ onBack }) {
-  const [msgs, setMsgs] = useState([{ role:"bot", text:"Bonjour ! Je suis l'assistant BCEG. Comment puis-je vous aider aujourd'hui ?" }]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const bottomRef = useRef();
-  useEffect(()=>{ bottomRef.current?.scrollIntoView({ behavior:"smooth" }); },[msgs]);
-  const send = async () => {
-    if(!input.trim()||loading) return;
-    const q=input.trim(); setInput("");
-    setMsgs(m=>[...m,{ role:"user", text:q }]);
-    setLoading(true);
-    await new Promise(r=>setTimeout(r,1200));
-    setMsgs(m=>[...m,{ role:"bot", text:"Merci pour votre message. Pour un problème urgent, je vous recommande de déposer une réclamation formelle via l'onglet « Réclamations ». Un conseiller BCEG analysera votre dossier dans les 48 heures ouvrables. Vos rêves, notre expertise !" }]);
-    setLoading(false);
-  };
-  return (
-    <div style={{ height:"100vh", display:"flex", flexDirection:"column", background:BG }}>
-      <GH minH={0}><TopBar onBack={onBack} title="Assistant BCEG" subtitle="Disponible 24h/24"/><div style={{ height:20 }}/></GH>
-      <div style={{ flex:1, overflowY:"auto", padding:"16px", display:"flex", flexDirection:"column", gap:10 }}>
-        {msgs.map((m,i)=>(<div key={i} style={{ display:"flex", justifyContent:m.role==="user"?"flex-end":"flex-start" }}>{m.role==="bot"&&<div style={{ width:30, height:30, borderRadius:"50%", background:G2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:WHITE, marginRight:8, flexShrink:0, alignSelf:"flex-end", fontFamily:"'Barlow Condensed',sans-serif", letterSpacing:1 }}>B</div>}<div style={{ maxWidth:"78%", padding:"12px 16px", borderRadius:18, borderBottomRightRadius:m.role==="user"?4:18, borderBottomLeftRadius:m.role==="bot"?4:18, background:m.role==="user"?G2:WHITE, color:m.role==="user"?WHITE:T_D, fontSize:14, lineHeight:1.6, boxShadow:"0 2px 10px rgba(58,65,48,0.1)" }}>{m.text}</div></div>))}
-        {loading&&(<div style={{ display:"flex", alignItems:"center", gap:8 }}><div style={{ width:30, height:30, borderRadius:"50%", background:G2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:WHITE, fontFamily:"'Barlow Condensed',sans-serif" }}>B</div><div style={{ background:WHITE, padding:"12px 16px", borderRadius:"18px 18px 18px 4px", boxShadow:"0 2px 10px rgba(58,65,48,0.1)", display:"flex", gap:5 }}>{[0,1,2].map(i=><div key={i} style={{ width:8, height:8, borderRadius:"50%", background:GRAY, animation:"pulse 1.2s ease-in-out infinite", animationDelay:`${i*.3}s` }}/>)}</div></div>)}
-        <div ref={bottomRef}/>
-      </div>
-      <div style={{ padding:"12px 14px 20px", background:WHITE, borderTop:"1px solid "+BORDER, display:"flex", gap:10 }}>
-        <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Écrivez votre message..." style={{ ...inp, flex:1, padding:"12px 16px" }}/>
-        <button onClick={send} style={{ width:46, height:46, borderRadius:12, background:`linear-gradient(135deg,${G2},${G1})`, border:"none", color:WHITE, fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>→</button>
-      </div>
-    </div>
-  );
-}
-
 export default function App() {
   const [screen, setScreen] = useState("login");
   const [user, setUser] = useState(null);
@@ -425,7 +394,6 @@ export default function App() {
         {screen==="success"   && <SuccessScreen  num={successNum} onDashboard={()=>setScreen("dashboard")} onHistory={()=>setScreen("history")}/>}
         {screen==="history"   && <HistoryScreen  claims={claims} onBack={()=>setScreen("dashboard")} onNewClaim={()=>setScreen("newClaim")}/>}
         {screen==="profile"   && <ProfileScreen  user={user} onBack={()=>setScreen("dashboard")}/>}
-        {screen==="assistant" && <AssistantScreen onBack={()=>setScreen("dashboard")}/>}
       </div>
     </>
   );
