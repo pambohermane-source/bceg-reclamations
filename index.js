@@ -190,7 +190,6 @@ app.post('/depot-reclamation/soumettre', upload.single('fichier'), (req, res) =>
   );
 });
 
-// Route enquete client publique
 app.get('/enquete-client/:numero', (req, res) => {
   req.url = '/client/' + req.params.numero;
   enquetesRoutes(req, res, function(){});
@@ -200,7 +199,6 @@ app.post('/enquetes/soumettre/:numero', (req, res, next) => {
   enquetesRoutes(req, res, next);
 });
 
-// Servir les fichiers uploads (accessible connecte)
 const fs = require('fs');
 app.get('/fichier/:filename', (req, res) => {
   var filePath = require('path').join(__dirname, 'uploads', req.params.filename);
@@ -216,6 +214,11 @@ app.use('/dashboard', dashboardRoutes);
 app.use('/reclamation', reclamationsRoutes);
 app.use('/statistiques', statistiquesRoutes);
 app.use('/enquetes', enquetesRoutes);
+
+// =============================================
+// FRONTEND REACT (nouvelle interface client)
+// =============================================
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => res.redirect('/dashboard'));
 

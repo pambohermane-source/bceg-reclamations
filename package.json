@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "build": "npm rebuild sqlite3 --build-from-source"
+    "build": "cd client && npm install && npm run build"
   },
-  "author": "PAMBO Taty Hermane - BCEG",
+  "author": "PAMBO Taty Hermane – BCEG",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
