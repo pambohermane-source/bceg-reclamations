@@ -456,12 +456,12 @@ function NewClaimForm({ onSubmit, onBack }) {
   const item = pole?.items.find(i=>i.id===form.category);
   const extras = item?.extras||[];
   const can = [true, !!form.pole&&!!form.category, !!form.description, !!form.telephone];
-  const SL = ["Profil","Catégorie","Détails","Documents"];
+  const SL = ["Catégorie","Détails","Documents"];
 
   return (
     <div style={{ minHeight:"100vh", background:BG }}>
       <GH minH={0}>
-        <TopBar onBack={step===1?onBack:()=>setStep(s=>s-1)} title="Nouvelle réclamation" subtitle={`Étape ${step}/4 — ${SL[step-1]}`}/>
+        <TopBar onBack={step===1?onBack:()=>setStep(s=>Math.max(1,s-1))} title="Nouvelle réclamation" subtitle={`Étape ${step}/3 — ${SL[step-1]}`}/>
         <div style={{ padding:"14px 18px 22px", display:"flex", gap:0, alignItems:"center", position:"relative", zIndex:2 }}>
           {SL.map((l,i)=>(
             <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", position:"relative" }}>
