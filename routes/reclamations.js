@@ -48,7 +48,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 10*1024*1024 } });
 
 const AGENCES = ['Agence Okoume (Siege)','Agence Movingui','Agence Bilinga','Point Cash Tali','Point Cash Akanda','Bureau Ozigo (Port-Gentil)','Agence Azobe'];
-const DEPARTEMENTS = ['Comptabilite','Informatique','Engagements','Digital','Operations'];
+const DEPARTEMENTS = ['Comptabilite','Informatique','Engagements','Digital','Operations','Monetique','Commercial','Achats et Logistique','Recouvrement et Juridique'];
 
 // FORMULAIRE NOUVELLE RECLAMATION
 router.get('/nouvelle', authMiddleware, (req, res) => {
