@@ -477,25 +477,6 @@ function NewClaimForm({ onSubmit, onBack }) {
 
       <div style={{ padding:"16px 16px 100px" }}>
         {step===1 && (
-          <div style={cardS}>
-            <h3 style={{ fontSize:15, fontWeight:800, color:T_D, marginBottom:4 }}>Quel est votre profil ?</h3>
-            <p style={{ fontSize:12, color:T_M, marginBottom:18 }}>Sélectionnez la catégorie qui vous correspond</p>
-            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {PROFILES.map(p=>(
-                <button key={p.id} onClick={()=>setForm(f=>({...f,profile:p.id}))} style={{ display:"flex", alignItems:"center", gap:14, padding:"13px 15px", borderRadius:12, border:`2px solid ${form.profile===p.id?G2:BORDER}`, background:form.profile===p.id?"#EEF0EA":WHITE, cursor:"pointer", textAlign:"left", fontFamily:"inherit" }}>
-                  <div style={{ width:44, height:44, borderRadius:12, background:form.profile===p.id?G2:BG, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, flexShrink:0 }}>{p.icon}</div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:14, fontWeight:700, color:form.profile===p.id?G2:T_D }}>{p.label}</div>
-                    <div style={{ fontSize:12, color:T_L }}>{p.desc}</div>
-                  </div>
-                  {form.profile===p.id&&<div style={{ color:G2, fontSize:18 }}>✓</div>}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {step===2 && (
           <div>
             <div style={cardS}>
               <h3 style={{ fontSize:15, fontWeight:800, color:T_D, marginBottom:4 }}>Choisissez un pôle</h3>
@@ -528,7 +509,7 @@ function NewClaimForm({ onSubmit, onBack }) {
           </div>
         )}
 
-        {step===3 && (
+        {step===2 && (
           <div style={cardS}>
             <h3 style={{ fontSize:15, fontWeight:800, color:T_D, marginBottom:4 }}>Détails de votre réclamation</h3>
             <p style={{ fontSize:12, color:T_M, marginBottom:18 }}>Plus vous êtes précis, plus vite nous traitons votre dossier.</p>
