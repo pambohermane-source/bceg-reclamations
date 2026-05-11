@@ -120,6 +120,19 @@ const POLES = [
       { id: "mainlevee_garantie", label: "Mainlevée / Déblocage garantie",  extras: ["upload_lettre"] },
     ]
   },
+  { id: "commercial", label: "Commercial", icon: "🤝",
+    items: [
+      { id: "cloture_compte",       label: "Clôture de compte",                                extras: [] },
+      { id: "changement_gest",      label: "Changement de gestionnaire",                       extras: [] },
+      { id: "duree_traitement",     label: "Durée de traitement de dossier",                   extras: [] },
+      { id: "agios_trop_percu",     label: "Agios / Trop-perçu",                               extras: ["montant", "upload_releve"] },
+    ]
+  },
+  { id: "achats_logistique", label: "Achats et Logistique", icon: "📦",
+    items: [
+      { id: "facture_impayee",  label: "Facture impayée",  extras: ["montant", "upload_facture"] },
+    ]
+  },
 ];
 
 const PROFILES = [
@@ -442,7 +455,7 @@ function NewClaimForm({ onSubmit, onBack }) {
   const pole = POLES.find(p=>p.id===form.pole);
   const item = pole?.items.find(i=>i.id===form.category);
   const extras = item?.extras||[];
-  const can = [!!form.profile, !!form.pole&&!!form.category, !!form.description, !!form.telephone];
+  const can = [true, !!form.pole&&!!form.category, !!form.description, !!form.telephone];
   const SL = ["Profil","Catégorie","Détails","Documents"];
 
   return (
@@ -555,7 +568,7 @@ function NewClaimForm({ onSubmit, onBack }) {
             </div>
             <div style={cardS}>
               <div style={{ fontSize:10, fontWeight:700, color:T_L, letterSpacing:1.2, marginBottom:12 }}>RÉCAPITULATIF DU DOSSIER</div>
-              {[["Profil",PROFILES.find(p=>p.id===form.profile)?.label],["Pôle",pole?.label],["Réclamation",item?.label],["Agence",form.agence||"Non précisée"],form.montant?["Montant",form.montant+" FCFA"]:null].filter(Boolean).map(([k,v])=>(
+              {[["Pôle",pole?.label],["Réclamation",item?.label],["Agence",form.agence||"Non précisée"],form.montant?["Montant",form.montant+" FCFA"]:null].filter(Boolean).map(([k,v])=>(
                 <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:"9px 0", borderBottom:"1px solid "+BORDER }}>
                   <span style={{ fontSize:12, color:T_M }}>{k}</span>
                   <span style={{ fontSize:12, fontWeight:700, color:T_D, maxWidth:"60%", textAlign:"right" }}>{v||"—"}</span>
