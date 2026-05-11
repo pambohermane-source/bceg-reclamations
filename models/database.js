@@ -36,7 +36,6 @@ db.serialize(() => {
     description TEXT NOT NULL,
     statut TEXT DEFAULT 'Nouvelle',
     priorite TEXT DEFAULT 'Normale',
-    source TEXT DEFAULT 'backoffice',
     date_reception DATETIME DEFAULT (datetime('now')),
     date_affectation DATETIME,
     date_traitement DATETIME,
@@ -82,23 +81,19 @@ db.serialize(() => {
     FOREIGN KEY (reclamation_id) REFERENCES reclamations(id)
   )`);
 
-  // Colonne source (pour distinguer app mobile / backoffice / public)
-  db.run(`ALTER TABLE reclamations ADD COLUMN source TEXT DEFAULT 'backoffice'`, function(){});
-
   var utilisateurs = [
-    { nom: 'OVONO NGUI',       prenom: 'Flore Mariane',  email: 'f.ovono-ngui@bceg.ga',   role: 'cec',        departement: null,                     mdp: 'CEC@bceg2026' },
-    { nom: 'OKOME MENIE',      prenom: 'Marcelle Theau', email: 'm.okome@bceg.ga',          role: 'qualite',    departement: null,                     mdp: 'Qualite@bceg2026' },
-    { nom: 'OBAME NGUEMA',     prenom: 'Alex',            email: 'a.obame@bceg.ga',          role: 'departement',departement: 'Comptabilite',            mdp: 'Compta@bceg2026' },
-    { nom: 'MINKO MOBAME',     prenom: 'Fabrice',         email: 'f.minko@bgfi.com',         role: 'departement',departement: 'Informatique,Digital',    mdp: 'Info@bceg2026' },
-    { nom: 'YAFAMA',           prenom: 'Nina Pelagie',    email: 'n.yafama@bceg.ga',         role: 'departement',departement: 'Engagements',             mdp: 'Engag@bceg2026' },
-    { nom: 'MOUYEGHE LIKASSA', prenom: 'Jennifer',        email: 'j.likassa@bceg.ga',        role: 'departement',departement: 'Operations',              mdp: 'Oper@bceg2026' },
-    { nom: 'MFOULOUH',         prenom: 'Ghislain',        email: 'g.mfoulouh@bceg.ga',       role: 'direction',  departement: 'DGA',                    mdp: 'DGA@bceg2026' },
-    { nom: 'NTOUTOUME',        prenom: 'Daisy-Helen',     email: 'd.ntoutoume@bceg.ga',      role: 'direction',  departement: 'DG',                     mdp: 'DG@bceg2026' },
-    { nom: 'PAMBO',            prenom: 'Taty Hermane',    email: 'h.pambo@bceg.ga',          role: 'departement',departement: 'Digital',                 mdp: 'Digital@bceg2026' },
-    // NOUVEAUX UTILISATEURS
-    { nom: 'MEYO',             prenom: 'K.',              email: 'k.meyo@bceg.ga',           role: 'departement',departement: 'Commercial',              mdp: 'Comm@bceg2026' },
-    { nom: 'BOUSSOUGOU',       prenom: 'A.',              email: 'a.boussougou@bceg.ga',     role: 'departement',departement: 'Achats et Logistique',    mdp: 'Achats@bceg2026' },
-    { nom: 'MVE-MVE',          prenom: 'F.',              email: 'f.mve-mve@bceg.ga',        role: 'departement',departement: 'Recouvrement et Juridique',mdp: 'Recouv@bceg2026' }
+    { nom: 'OVONO NGUI', prenom: 'Flore Mariane', email: 'f.ovono-ngui@bceg.ga', role: 'cec', departement: null, mdp: 'CEC@bceg2026' },
+    { nom: 'OKOME MENIE', prenom: 'Marcelle Theau', email: 'm.okome@bceg.ga', role: 'qualite', departement: null, mdp: 'Qualite@bceg2026' },
+    { nom: 'OBAME NGUEMA', prenom: 'Alex', email: 'a.obame@bceg.ga', role: 'departement', departement: 'Comptabilite', mdp: 'Compta@bceg2026' },
+    { nom: 'MINKO MOBAME', prenom: 'Fabrice', email: 'f.minko@bgfi.com', role: 'departement', departement: 'Informatique,Digital', mdp: 'Info@bceg2026' },
+    { nom: 'YAFAMA', prenom: 'Nina Pelagie', email: 'n.yafama@bceg.ga', role: 'departement', departement: 'Engagements', mdp: 'Engag@bceg2026' },
+    { nom: 'MOUYEGHE LIKASSA', prenom: 'Jennifer', email: 'j.likassa@bceg.ga', role: 'departement', departement: 'Operations', mdp: 'Oper@bceg2026' },
+    { nom: 'MFOULOUH', prenom: 'Ghislain', email: 'g.mfoulouh@bceg.ga', role: 'direction', departement: 'DGA', mdp: 'DGA@bceg2026' },
+    { nom: 'NTOUTOUME', prenom: 'Daisy-Helen', email: 'd.ntoutoume@bceg.ga', role: 'direction', departement: 'DG', mdp: 'DG@bceg2026' },
+    { nom: 'PAMBO', prenom: 'Taty Hermane', email: 'h.pambo@bceg.ga', role: 'departement', departement: 'Digital', mdp: 'Digital@bceg2026' },
+    { nom: 'MEYO', prenom: 'K.', email: 'k.meyo@bceg.ga', role: 'departement', departement: 'Commercial', mdp: 'Comm@bceg2026' },
+    { nom: 'BOUSSOUGOU', prenom: 'A.', email: 'a.boussougou@bceg.ga', role: 'departement', departement: 'Achats et Logistique', mdp: 'Achat@bceg2026' },
+    { nom: 'MVE-MVE', prenom: 'F.', email: 'f.mve-mve@bceg.ga', role: 'departement', departement: 'Recouvrement et Juridique', mdp: 'Recouv@bceg2026' }
   ];
 
   utilisateurs.forEach(function(u) {
@@ -107,7 +102,6 @@ db.serialize(() => {
         var hash = bcrypt.hashSync(u.mdp, 10);
         db.run('INSERT INTO utilisateurs (nom, prenom, email, mot_de_passe, role, departement) VALUES (?,?,?,?,?,?)',
           [u.nom, u.prenom, u.email, hash, u.role, u.departement]);
-        console.log('Compte cree : ' + u.email);
       }
     });
   });
