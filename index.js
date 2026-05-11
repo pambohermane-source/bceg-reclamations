@@ -9,6 +9,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// CORS pour permettre a l'app mobile BCEG Hub de communiquer
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
+
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
 const reclamationsRoutes = require('./routes/reclamations');
@@ -190,6 +199,7 @@ app.post('/depot-reclamation/soumettre', upload.single('fichier'), (req, res) =>
   );
 });
 
+// Route enquete client publique
 app.get('/enquete-client/:numero', (req, res) => {
   req.url = '/client/' + req.params.numero;
   enquetesRoutes(req, res, function(){});
@@ -199,11 +209,72 @@ app.post('/enquetes/soumettre/:numero', (req, res, next) => {
   enquetesRoutes(req, res, next);
 });
 
+// Servir les fichiers uploads (accessible connecte)
 const fs = require('fs');
 app.get('/fichier/:filename', (req, res) => {
   var filePath = require('path').join(__dirname, 'uploads', req.params.filename);
   if (fs.existsSync(filePath)) res.sendFile(require('path').resolve(filePath));
   else res.status(404).send('Fichier non trouve');
+});
+
+// =============================================
+// ENDPOINT API MOBILE — BCEG Hub App
+// =============================================
+// Mapping poles app mobile -> departements back-office
+var POLE_TO_DEPT = {
+  'comptabilite':      'Comptabilite',
+  'engagement':        'Engagements',
+  'digital':           'Digital',
+  'informatique':      'Informatique',
+  'monetique':         'Monetique',
+  'operations':        'Operations',
+  'operations_inter':  'Operations',
+  'recouvrement':      'Recouvrement et Juridique',
+  'commercial':        'Commercial',
+  'achats_logistique': 'Achats et Logistique'
+};
+
+// POST /api/reclamation — depuis l'app mobile BCEG Hub
+app.post('/api/reclamation', upload.none(), function(req, res) {
+  var db = require('./models/database');
+  var numero = 'REC-' + Date.now().toString().slice(-6);
+  var pole = req.body.pole || '';
+  var departement = POLE_TO_DEPT[pole] || pole;
+  var categorie = req.body.category_label || req.body.category || '';
+  var description = req.body.description || '';
+  var telephone = req.body.telephone || '';
+  var email = req.body.emailSuivi || req.body.email || '';
+  var agence = req.body.agence || '';
+  var profil = req.body.profile || 'Particulier';
+  var montant = req.body.montant || '';
+  var nomClient = req.body.nom_client || req.body.prenom + ' ' + req.body.nom || 'Client App';
+  var source = 'app_mobile';
+
+  if (montant) description = description + ' (Montant concerne : ' + montant + ' FCFA)';
+
+  db.run(
+    'INSERT INTO reclamations (numero_suivi, nom_client, telephone_client, email_client, type_client, agence, canal, departement_assigne, categorie, description, statut, source) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+    [numero, nomClient, telephone, email, profil, agence, 'Application mobile', departement, categorie, description, 'Nouvelle', source],
+    function(err) {
+      if (err) {
+        console.log('API mobile error:', err.message);
+        return res.status(500).json({ success: false, error: 'Erreur serveur', numero: null });
+      }
+      console.log('Reclamation app mobile creee : ' + numero + ' -> ' + departement);
+      res.json({ success: true, numero: numero, departement: departement });
+    }
+  );
+});
+
+// GET /api/reclamations/:numero — suivi depuis l'app mobile
+app.get('/api/reclamation/:numero', function(req, res) {
+  var db = require('./models/database');
+  db.get('SELECT numero_suivi, statut, date_reception, departement_assigne, categorie FROM reclamations WHERE numero_suivi = ?',
+    [req.params.numero], function(err, row) {
+      if (!row) return res.status(404).json({ success: false, error: 'Non trouve' });
+      res.json({ success: true, reclamation: row });
+    }
+  );
 });
 
 // =============================================
@@ -215,14 +286,9 @@ app.use('/reclamation', reclamationsRoutes);
 app.use('/statistiques', statistiquesRoutes);
 app.use('/enquetes', enquetesRoutes);
 
-// =============================================
-// FRONTEND REACT (nouvelle interface client)
-// =============================================
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.get('/', (req, res) => res.redirect('/dashboard'));
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log('BCEG Reclamations demarre sur le port ' + PORT);
-})
+});
